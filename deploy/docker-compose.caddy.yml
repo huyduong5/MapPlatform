@@ -1,0 +1,27 @@
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: mapplatform-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-yourdomain.com}
+      CADDY_ACME_EMAIL: ${CADDY_ACME_EMAIL:-admin@yourdomain.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - mapplatform
+    depends_on: []
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  mapplatform:
+    external: true
+    name: mapplatform_net

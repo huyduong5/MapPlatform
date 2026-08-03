@@ -1,0 +1,40 @@
+# Dependencies & build
+node_modules/
+.pnpm-store/
+dist/
+build/
+.next/
+out/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+coverage/
+*.tsbuildinfo
+
+# Env & secrets
+.env
+.env.local
+.env.*.local
+.env.test
+!.env.example
+!.env.production.example
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs & backups
+*.log
+logs/
+/backup/
+/backups/
+*.dump
+
+# Test artifacts
+playwright-report/
+test-results/

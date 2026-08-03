@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Đại học Cần Thơ",
+    "type": "university",
+    "address": "Khu II, Xuân Khánh, Ninh Kiều, Cần Thơ",
+    "latitude": 10.0299,
+    "longitude": 105.7705,
+    "source_record_id": "seed-ct-ctu"
+  },
+  {
+    "name": "Bệnh viện Đa khoa Trung ương Cần Thơ",
+    "type": "hospital",
+    "address": "315 Nguyễn Văn Linh, Ninh Kiều, Cần Thơ",
+    "latitude": 10.0245,
+    "longitude": 105.7598,
+    "source_record_id": "seed-ct-bvdk"
+  }
+]

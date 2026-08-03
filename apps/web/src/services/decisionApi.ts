@@ -1,0 +1,52 @@
+import type { LocationSummary } from '@/types/location'
+
+export type DecideResult = {
+  query: string
+  intent: {
+    intent: string
+    locationType: string | null
+    landmark: string | null
+    batteryPercent: number | null
+    urgency: string
+    source: string
+  }
+  anchor: {
+    latitude: number
+    longitude: number
+    label: string
+    source: string
+  }
+  radiusMeters: number
+  recommendations: Array<
+    LocationSummary & {
+      distanceKm: number
+      rank: number
+      score: number
+      reasons: string[]
+    }
+  >
+  explanation: string
+}
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || 'http://localhost:3001'
+
+export async function decide(params: {
+  query: string
+  latitude?: number
+  longitude?: number
+  limit?: number
+  city?: string
+}): Promise<DecideResult> {
+  const res = await fetch(`${API_BASE}/api/decide`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+    cache: 'no-store',
+  })
+  const json = await res.json()
+  if (!res.ok || json.success === false) {
+    throw new Error(json?.error?.message || `HTTP ${res.status}`)
+  }
+  return json.data as DecideResult
+}

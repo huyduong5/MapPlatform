@@ -1,0 +1,77 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: geouser
+          POSTGRES_PASSWORD: geopass
+          POSTGRES_DB: geo_platform
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U geouser -d geo_platform"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://geouser:geopass@localhost:5432/geo_platform
+      DATABASE_URL_TEST: postgresql://geouser:geopass@localhost:5432/geo_platform
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Install psql client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+
+      - name: Migrate + seed
+        run: |
+          for i in $(seq 1 40); do pg_isready -h localhost -U geouser -d geo_platform && break; sleep 2; done
+          PGPASSWORD=geopass psql -h localhost -U geouser -d geo_platform -f database/migrations/001_init_schema.sql
+          PGPASSWORD=geopass psql -h localhost -U geouser -d geo_platform -f database/migrations/002_phase4_review_queue.sql
+          PGPASSWORD=geopass psql -h localhost -U geouser -d geo_platform -f database/migrations/003_phase7_city.sql
+          PGPASSWORD=geopass psql -h localhost -U geouser -d geo_platform -f database/seeds/sources.sql
+          PGPASSWORD=geopass psql -h localhost -U geouser -d geo_platform -f database/seeds/locations_hanoi.sql || true
+          PGPASSWORD=geopass psql -h localhost -U geouser -d geo_platform -f database/seeds/locations_phase4.sql
+          PGPASSWORD=geopass psql -h localhost -U geouser -d geo_platform -f database/seeds/locations_phase6.sql || true
+          PGPASSWORD=geopass psql -h localhost -U geouser -d geo_platform -f database/seeds/locations_phase7_hcm.sql || true
+          PGPASSWORD=geopass psql -h localhost -U geouser -d geo_platform -f database/seeds/locations_phase7_danang.sql || true
+
+      - name: Unit tests
+        run: |
+          pnpm --filter @mapplatform/api test
+          pnpm --filter @mapplatform/web test
+
+      - name: Integration DB tests
+        env:
+          DATABASE_URL_TEST: postgresql://geouser:geopass@localhost:5432/geo_platform
+        run: pnpm test:integration
+
+      - name: Crawler unit tests
+        run: |
+          pip install -r crawler/requirements.txt
+          (cd crawler && PYTHONPATH=. pytest -q)

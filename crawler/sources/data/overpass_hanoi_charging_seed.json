@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Trạm sạc Vincom Bà Triệu",
+    "type": "charging_station",
+    "address": "191 Bà Triệu, Hai Bà Trưng, Hà Nội",
+    "latitude": 21.0083,
+    "longitude": 105.8497,
+    "source_record_id": "osm-seed-ba-trieu",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trạm sạc Vincom Royal City",
+    "type": "charging_station",
+    "address": "72A Nguyễn Trãi, Thanh Xuân, Hà Nội",
+    "latitude": 20.9985,
+    "longitude": 105.8115,
+    "source_record_id": "osm-seed-royal",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trạm sạc Vincom Times City",
+    "type": "charging_station",
+    "address": "458 Minh Khai, Hai Bà Trưng, Hà Nội",
+    "latitude": 20.9952,
+    "longitude": 105.8622,
+    "source_record_id": "osm-seed-times",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trạm sạc Vincom Metropolis",
+    "type": "charging_station",
+    "address": "29 Liễu Giai, Ba Đình, Hà Nội",
+    "latitude": 21.0315,
+    "longitude": 105.8138,
+    "source_record_id": "osm-seed-metropolis",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trạm sạc Vincom Ocean Park",
+    "type": "charging_station",
+    "address": "Vinhomes Ocean Park, Gia Lâm, Hà Nội",
+    "latitude": 20.9936,
+    "longitude": 105.9448,
+    "source_record_id": "osm-seed-ocean",
+    "source_url": "https://www.openstreetmap.org"
+  }
+]

@@ -1,0 +1,492 @@
+openapi: 3.0.3
+info:
+  title: Geo Decision Platform API
+  description: |
+    Geo Decision Platform API — Phase 1 Locations + Phase 2 Decision Engine.
+    Response envelope: `{ success, data, pagination? }` hoặc `{ success: false, error: { code, message } }`.
+    DB dùng `source_id` (UUID); API trả `source` = `sources.name` (string).
+  version: 2.0.0
+  contact:
+    name: VinSmartFuture Group 1
+
+servers:
+  - url: http://localhost:3001
+    description: Local development
+  - url: https://api.example.com
+    description: Staging / production (thay bằng URL thật)
+
+tags:
+  - name: Locations
+    description: Truy vấn địa điểm (trạm sạc, cửa hàng, …)
+  - name: Decision
+    description: Phase 2 — AI Geo Decision Engine
+
+paths:
+  /api/locations:
+    get:
+      tags: [Locations]
+      summary: List / search / filter locations
+      operationId: listLocations
+      parameters:
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/LocationType'
+          description: Lọc theo loại. Bỏ trống = mọi loại.
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/LocationStatus'
+          description: Mặc định `active` nếu không truyền.
+        - name: search
+          in: query
+          schema:
+            type: string
+            minLength: 1
+          description: Tìm theo name hoặc address (ILIKE).
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: minLat
+          in: query
+          schema:
+            type: number
+            format: double
+          description: Bounding box (tuỳ chọn) — góc dưới. Filter dùng PostGIS `location && ST_MakeEnvelope` (GIST).
+        - name: maxLat
+          in: query
+          schema:
+            type: number
+            format: double
+        - name: minLng
+          in: query
+          schema:
+            type: number
+            format: double
+        - name: maxLng
+          in: query
+          schema:
+            type: number
+            format: double
+        - name: withTotal
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: >
+            Khi `false`, bỏ qua COUNT(*) (phù hợp map pan/zoom).
+            `pagination.total` và `pagination.totalPages` trả `null`.
+        - name: city
+          in: query
+          schema:
+            type: string
+            enum: [hanoi, hcm, danang]
+          description: Lọc theo thành phố (mặc định hanoi).
+      responses:
+        '200':
+          description: Danh sách location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationListResponse'
+              example:
+                success: true
+                data:
+                  - id: "550e8400-e29b-41d4-a716-446655440000"
+                    name: "VinFast Times City"
+                    type: store
+                    address: "458 Minh Khai, Hai Bà Trưng, Hà Nội"
+                    latitude: 20.995
+                    longitude: 105.862
+                    status: active
+                    source: "vinfast_official"
+                    sourceUrl: "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+                    phone: null
+                    openingHours: null
+                    lastUpdated: "2026-07-28T02:00:00+07:00"
+                    createdAt: "2026-07-01T00:00:00+07:00"
+                    updatedAt: "2026-07-28T02:00:00+07:00"
+                pagination:
+                  page: 1
+                  limit: 20
+                  total: 1
+                  totalPages: 1
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/locations/nearby:
+    get:
+      tags: [Locations]
+      summary: Tìm location gần một toạ độ (PostGIS)
+      operationId: nearbyLocations
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: -90
+            maximum: 90
+          example: 20.995
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: -180
+            maximum: 180
+          example: 105.862
+        - name: radius
+          in: query
+          required: false
+          schema:
+            type: number
+            format: double
+            exclusiveMinimum: 0
+            default: 5000
+          description: Bán kính mét (mặc định 5000m = 5km).
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/LocationType'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        '200':
+          description: Danh sách kèm distanceKm, sort tăng dần
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NearbyListResponse'
+              example:
+                success: true
+                data:
+                  - id: "550e8400-e29b-41d4-a716-446655440000"
+                    name: "VinFast Times City"
+                    type: store
+                    address: "458 Minh Khai, Hai Bà Trưng, Hà Nội"
+                    latitude: 20.995
+                    longitude: 105.862
+                    status: active
+                    distanceKm: 0.1
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/locations/{id}:
+    get:
+      tags: [Locations]
+      summary: Chi tiết một location
+      operationId: getLocationById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Chi tiết location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationDetailResponse'
+        '404':
+          description: Không tìm thấy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  code: LOCATION_NOT_FOUND
+                  message: Location not found
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/decide:
+    post:
+      tags: [Decision]
+      summary: AI Geo Decision Engine (Phase 2)
+      description: |
+        Intent (rules, optional Ollama) → resolve anchor (user GPS / landmark alias / Photon)
+        → PostGIS nearby → business rules ranking → Vietnamese explanation.
+        $0 by default (no paid LLM).
+      operationId: decide
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  example: Xe tôi gần Times City, pin còn 10%, tìm trạm sạc phù hợp nhất.
+                latitude:
+                  type: number
+                  format: double
+                longitude:
+                  type: number
+                  format: double
+                limit:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  default: 3
+      responses:
+        '200':
+          description: Recommendation bundle
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [true]
+                  data:
+                    type: object
+                    properties:
+                      query:
+                        type: string
+                      intent:
+                        type: object
+                      anchor:
+                        type: object
+                      radiusMeters:
+                        type: integer
+                      recommendations:
+                        type: array
+                        items:
+                          type: object
+                      explanation:
+                        type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  schemas:
+    LocationType:
+      type: string
+      enum:
+        - charging_station
+        - store
+        - service_center
+        - showroom
+        - dealer
+        - parking
+        - rescue_team
+        - gas_station
+        - university
+        - hospital
+      description: MVP bắt buộc có dữ liệu cho charging_station và store.
+
+    LocationStatus:
+      type: string
+      enum: [active, inactive]
+
+    LocationSummary:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - address
+        - latitude
+        - longitude
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/LocationType'
+        address:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        status:
+          $ref: '#/components/schemas/LocationStatus'
+        source:
+          type: string
+          description: Tên nguồn (sources.name), không phải UUID
+          nullable: true
+        sourceUrl:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        openingHours:
+          type: string
+          nullable: true
+        lastUpdated:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    NearbyLocation:
+      allOf:
+        - $ref: '#/components/schemas/LocationSummary'
+        - type: object
+          required: [distanceKm]
+          properties:
+            distanceKm:
+              type: number
+              format: double
+              description: Khoảng cách km, làm tròn 1–2 chữ số thập phân
+
+    Pagination:
+      type: object
+      required: [page, limit, total, totalPages]
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+          nullable: true
+          description: null khi `withTotal=false`
+        totalPages:
+          type: integer
+          nullable: true
+          description: null khi `withTotal=false`
+    LocationListResponse:
+      type: object
+      required: [success, data, pagination]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationSummary'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    NearbyListResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/NearbyLocation'
+
+    LocationDetailResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/LocationSummary'
+
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum:
+            - BAD_REQUEST
+            - INVALID_LOCATION_TYPE
+            - LOCATION_NOT_FOUND
+            - TOO_MANY_REQUESTS
+            - INTERNAL_SERVER_ERROR
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        error:
+          $ref: '#/components/schemas/ErrorBody'
+
+  responses:
+    BadRequest:
+      description: Tham số không hợp lệ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: BAD_REQUEST
+              message: Missing required query parameter latitude
+    TooManyRequests:
+      description: Rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: TOO_MANY_REQUESTS
+              message: Rate limit exceeded
+    InternalError:
+      description: Lỗi server
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: INTERNAL_SERVER_ERROR
+              message: Unexpected server error

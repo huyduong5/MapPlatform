@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Bãi đỗ Times City P1",
+    "type": "parking",
+    "address": "458 Minh Khai, Hai Bà Trưng, Hà Nội",
+    "latitude": 20.9942,
+    "longitude": 105.8675,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-park-times",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Bãi đỗ Royal City",
+    "type": "parking",
+    "address": "72A Nguyễn Trãi, Thanh Xuân, Hà Nội",
+    "latitude": 21.0022,
+    "longitude": 105.815,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-park-royal",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Bãi đỗ Vincom Bà Triệu",
+    "type": "parking",
+    "address": "191 Bà Triệu, Hai Bà Trưng, Hà Nội",
+    "latitude": 21.008,
+    "longitude": 105.8495,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-park-ba-trieu",
+    "source_url": "https://www.openstreetmap.org"
+  }
+]

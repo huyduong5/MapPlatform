@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM",
+    "type": "university",
+    "address": "227 Nguyễn Văn Cừ, Quận 5, TP.HCM",
+    "latitude": 10.762622,
+    "longitude": 106.682168,
+    "source_record_id": "seed-hcm-khtn"
+  },
+  {
+    "name": "Trường Đại học Bách khoa TP.HCM",
+    "type": "university",
+    "address": "268 Lý Thường Kiệt, Quận 10, TP.HCM",
+    "latitude": 10.772461,
+    "longitude": 106.657897,
+    "source_record_id": "seed-hcm-bk"
+  },
+  {
+    "name": "Trường Đại học Kinh tế TP.HCM",
+    "type": "university",
+    "address": "59C Nguyễn Đình Chiểu, Quận 3, TP.HCM",
+    "latitude": 10.782774,
+    "longitude": 106.690084,
+    "source_record_id": "seed-hcm-ueh"
+  },
+  {
+    "name": "Bệnh viện Chợ Rẫy",
+    "type": "hospital",
+    "address": "201B Nguyễn Chí Thanh, Quận 5, TP.HCM",
+    "latitude": 10.757795,
+    "longitude": 106.659512,
+    "source_record_id": "seed-hcm-choray"
+  },
+  {
+    "name": "Bệnh viện Nhi Đồng 1",
+    "type": "hospital",
+    "address": "341 Sư Vạn Hạnh, Quận 10, TP.HCM",
+    "latitude": 10.77085,
+    "longitude": 106.6702,
+    "source_record_id": "seed-hcm-nhi1"
+  },
+  {
+    "name": "Petrolimex Kỳ Đồng",
+    "type": "gas_station",
+    "address": "Kỳ Đồng, Quận 3, TP.HCM",
+    "latitude": 10.7821,
+    "longitude": 106.6815,
+    "source_record_id": "seed-hcm-gas1"
+  },
+  {
+    "name": "Trạm sạc VinFast Landmark 81",
+    "type": "charging_station",
+    "address": "Vinhomes Central Park, Bình Thạnh, TP.HCM",
+    "latitude": 10.7951,
+    "longitude": 106.7218,
+    "source_record_id": "seed-hcm-charge1"
+  }
+]

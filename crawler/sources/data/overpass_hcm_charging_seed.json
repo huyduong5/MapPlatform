@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Trạm sạc VinFast Landmark 81",
+    "type": "charging_station",
+    "address": "Vinhomes Central Park, Bình Thạnh, TP.HCM",
+    "latitude": 10.7951,
+    "longitude": 106.7218,
+    "source_record_id": "seed-hcm-charge1"
+  },
+  {
+    "name": "Trạm sạc VinFast Vincom Đồng Khởi",
+    "type": "charging_station",
+    "address": "72 Lê Thánh Tôn, Quận 1, TP.HCM",
+    "latitude": 10.7769,
+    "longitude": 106.7009,
+    "source_record_id": "seed-hcm-charge2"
+  }
+]

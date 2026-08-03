@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Bệnh viện Đà Nẵng",
+    "type": "hospital",
+    "address": "124 Hải Phòng, Hải Châu, Đà Nẵng",
+    "latitude": 16.0669,
+    "longitude": 108.2145,
+    "source_record_id": "seed-dn-bvdn"
+  },
+  {
+    "name": "Bệnh viện C Đà Nẵng",
+    "type": "hospital",
+    "address": "122 Hải Phòng, Hải Châu, Đà Nẵng",
+    "latitude": 16.0675,
+    "longitude": 108.2152,
+    "source_record_id": "seed-dn-bvc"
+  }
+]

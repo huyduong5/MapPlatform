@@ -1,0 +1,202 @@
+[
+  {
+    "name": "Trường Đại học Khoa học Tự nhiên",
+    "type": "university",
+    "address": "334 Nguyễn Trãi, Thanh Xuân, Hà Nội",
+    "latitude": 20.9959393,
+    "longitude": 105.8080085,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-hus-nguyen-trai",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Khoa học Xã hội và Nhân văn",
+    "type": "university",
+    "address": "336 Nguyễn Trãi, Thanh Xuân, Hà Nội",
+    "latitude": 20.9954594,
+    "longitude": 105.8070351,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-ussh",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Đại học Bách khoa Hà Nội",
+    "type": "university",
+    "address": "1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội",
+    "latitude": 21.0043689,
+    "longitude": 105.8455332,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-bach-khoa",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Đại học Quốc gia Hà Nội",
+    "type": "university",
+    "address": "144 Xuân Thủy, Cầu Giấy, Hà Nội",
+    "latitude": 21.0383,
+    "longitude": 105.7824,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-vnu",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Đại học Kinh tế Quốc dân",
+    "type": "university",
+    "address": "207 Giải Phóng, Hai Bà Trưng, Hà Nội",
+    "latitude": 20.9994833,
+    "longitude": 105.8449781,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-neu",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Y Hà Nội",
+    "type": "university",
+    "address": "1 Tôn Thất Tùng, Đống Đa, Hà Nội",
+    "latitude": 21.0140335,
+    "longitude": 105.8588749,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-ymhn",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Ngoại thương",
+    "type": "university",
+    "address": "91 Chùa Láng, Đống Đa, Hà Nội",
+    "latitude": 21.0225863,
+    "longitude": 105.8051833,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-ftu",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Sư phạm Hà Nội",
+    "type": "university",
+    "address": "136 Xuân Thủy, Cầu Giấy, Hà Nội",
+    "latitude": 21.0390005,
+    "longitude": 105.7841768,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-hnue",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Ngoại ngữ",
+    "type": "university",
+    "address": "Phạm Văn Đồng, Cầu Giấy, Hà Nội",
+    "latitude": 21.0397121,
+    "longitude": 105.7822364,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-ulish",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Đại học Công nghệ",
+    "type": "university",
+    "address": "144 Xuân Thủy, Cầu Giấy, Hà Nội",
+    "latitude": 21.0382738,
+    "longitude": 105.7824572,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-uet",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Luật Hà Nội",
+    "type": "university",
+    "address": "87 Nguyễn Chí Thanh, Đống Đa, Hà Nội",
+    "latitude": 21.0212581,
+    "longitude": 105.81003,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-law",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Xây dựng Hà Nội",
+    "type": "university",
+    "address": "55 Giải Phóng, Hai Bà Trưng, Hà Nội",
+    "latitude": 21.003234,
+    "longitude": 105.8430813,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-huce",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Giao thông Vận tải",
+    "type": "university",
+    "address": "3 Cầu Giấy, Đống Đa, Hà Nội",
+    "latitude": 21.0277192,
+    "longitude": 105.8026964,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-uct",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Thủy lợi",
+    "type": "university",
+    "address": "175 Tây Sơn, Đống Đa, Hà Nội",
+    "latitude": 21.0066924,
+    "longitude": 105.8257726,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-tlu",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Dược Hà Nội",
+    "type": "university",
+    "address": "13-15 Lê Thánh Tông, Hoàn Kiếm, Hà Nội",
+    "latitude": 21.0211555,
+    "longitude": 105.858749,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-hup",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Mỏ - Địa chất",
+    "type": "university",
+    "address": "Đông Ngạc, Bắc Từ Liêm, Hà Nội",
+    "latitude": 21.0724617,
+    "longitude": 105.7738543,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-humg",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Đại học Công nghiệp Hà Nội",
+    "type": "university",
+    "address": "298 Cầu Diễn, Bắc Từ Liêm, Hà Nội",
+    "latitude": 21.054247,
+    "longitude": 105.7352638,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-haui",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Mở Hà Nội",
+    "type": "university",
+    "address": "Bùi Ngọc Dương, Hai Bà Trưng, Hà Nội",
+    "latitude": 21.0008112,
+    "longitude": 105.8669778,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-hou",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Học viện Công nghệ Bưu chính Viễn thông",
+    "type": "university",
+    "address": "Km10 Nguyễn Trãi, Hà Đông, Hà Nội",
+    "latitude": 20.9809612,
+    "longitude": 105.787077,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-ptit",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trường Đại học Khoa học và Công nghệ Hà Nội",
+    "type": "university",
+    "address": "Hòa Lạc, Thạch Thất, Hà Nội",
+    "latitude": 21.048152,
+    "longitude": 105.8011776,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-uni-usth",
+    "source_url": "https://www.openstreetmap.org"
+  }
+]

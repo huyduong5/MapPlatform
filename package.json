@@ -1,0 +1,33 @@
+{
+  "name": "mapplatform",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter @mapplatform/api --filter @mapplatform/web dev",
+    "dev:api": "pnpm --filter @mapplatform/api dev",
+    "dev:web": "pnpm --filter @mapplatform/web dev",
+    "build": "pnpm -r --filter @mapplatform/api --filter @mapplatform/web build",
+    "db:up": "docker compose up -d db",
+    "db:migrate": "docker compose exec -T db psql -U geouser -d geo_platform -f /docker-entrypoint-initdb.d/../migrations-run/001_init_schema.sql 2>/dev/null || docker compose exec -T db psql -U geouser -d geo_platform < database/migrations/001_init_schema.sql",
+    "db:seed": "docker compose exec -T db psql -U geouser -d geo_platform < database/seeds/sources.sql && docker compose exec -T db psql -U geouser -d geo_platform < database/seeds/locations_hanoi.sql",
+    "docker:up": "docker compose up -d --build",
+    "docker:db": "docker compose up -d db",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "crawl": "docker compose run --rm crawler python -m scheduler.run_once",
+    "smoke": "bash scripts/smoke-api.sh",
+    "health": "bash scripts/healthcheck.sh",
+    "backup": "bash scripts/backup-db.sh",
+    "alert:crawl": "bash scripts/alert-crawl-fail.sh",
+    "phase3:validate": "bash scripts/phase3-validate.sh",
+    "ci:local": "bash scripts/ci-local.sh",
+    "test:web": "pnpm --filter @mapplatform/web test",
+    "test:api": "pnpm --filter @mapplatform/api test",
+    "test:integration": "pnpm --filter @mapplatform/api exec vitest run --config vitest.integration.config.ts",
+    "test:e2e": "pnpm --filter @mapplatform/web test:e2e",
+    "test": "pnpm test:api && pnpm test:web"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

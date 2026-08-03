@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Đại học Hàng hải Việt Nam",
+    "type": "university",
+    "address": "484 Lạch Tray, Ngô Quyền, Hải Phòng",
+    "latitude": 20.8375,
+    "longitude": 106.6912,
+    "source_record_id": "seed-hp-hanghai"
+  },
+  {
+    "name": "Bệnh viện Việt Tiệp",
+    "type": "hospital",
+    "address": "Số 1 Nhà Thương, Lê Chân, Hải Phòng",
+    "latitude": 20.8505,
+    "longitude": 106.682,
+    "source_record_id": "seed-hp-viettiep"
+  }
+]

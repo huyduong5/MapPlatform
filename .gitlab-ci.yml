@@ -1,0 +1,47 @@
+# GitLab CI — Phase 5 Hardening
+# Pipeline: migrate → seed → unit → integration (DB) → smoke (optional services)
+
+stages:
+  - test
+
+variables:
+  POSTGRES_USER: geouser
+  POSTGRES_PASSWORD: geopass
+  POSTGRES_DB: geo_platform
+  DATABASE_URL: postgresql://geouser:geopass@postgres:5432/geo_platform
+  FF_NETWORK_PER_BUILD: "true"
+
+unit_and_integration:
+  stage: test
+  image: node:20-bookworm
+  services:
+    - name: postgis/postgis:16-3.4
+      alias: postgres
+      variables:
+        POSTGRES_USER: geouser
+        POSTGRES_PASSWORD: geopass
+        POSTGRES_DB: geo_platform
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq postgresql-client python3 python3-pip python3-venv >/dev/null
+    - corepack enable && corepack prepare pnpm@9.15.0 --activate
+    - pnpm install --frozen-lockfile
+    - |
+      for i in $(seq 1 40); do
+        pg_isready -h postgres -U geouser -d geo_platform && break
+        sleep 2
+      done
+    - PGPASSWORD=geopass psql -h postgres -U geouser -d geo_platform -f database/migrations/001_init_schema.sql
+    - PGPASSWORD=geopass psql -h postgres -U geouser -d geo_platform -f database/migrations/002_phase4_review_queue.sql
+    - PGPASSWORD=geopass psql -h postgres -U geouser -d geo_platform -f database/migrations/003_phase7_city.sql
+    - PGPASSWORD=geopass psql -h postgres -U geouser -d geo_platform -f database/seeds/sources.sql
+    - PGPASSWORD=geopass psql -h postgres -U geouser -d geo_platform -f database/seeds/locations_hanoi.sql || true
+    - PGPASSWORD=geopass psql -h postgres -U geouser -d geo_platform -f database/seeds/locations_phase4.sql
+    - PGPASSWORD=geopass psql -h postgres -U geouser -d geo_platform -f database/seeds/locations_phase6.sql || true
+    - PGPASSWORD=geopass psql -h postgres -U geouser -d geo_platform -f database/seeds/locations_phase7_hcm.sql || true
+    - PGPASSWORD=geopass psql -h postgres -U geouser -d geo_platform -f database/seeds/locations_phase7_danang.sql || true
+  script:
+    - pnpm --filter @mapplatform/api test
+    - pnpm --filter @mapplatform/web test
+    - DATABASE_URL_TEST=postgresql://geouser:geopass@postgres:5432/geo_platform pnpm test:integration
+    - pip3 install -q -r crawler/requirements.txt
+    - (cd crawler && PYTHONPATH=. pytest -q)

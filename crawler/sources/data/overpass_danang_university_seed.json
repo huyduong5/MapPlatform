@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Đại học Đà Nẵng",
+    "type": "university",
+    "address": "41 Lê Duẩn, Hải Châu, Đà Nẵng",
+    "latitude": 16.0603,
+    "longitude": 108.214,
+    "source_record_id": "seed-dn-udn"
+  },
+  {
+    "name": "Đại học Bách khoa Đà Nẵng",
+    "type": "university",
+    "address": "54 Nguyễn Lương Bằng, Liên Chiểu, Đà Nẵng",
+    "latitude": 16.0738,
+    "longitude": 108.1505,
+    "source_record_id": "seed-dn-bk"
+  },
+  {
+    "name": "Đại học Kinh tế Đà Nẵng",
+    "type": "university",
+    "address": "71 Ngũ Hành Sơn, Đà Nẵng",
+    "latitude": 16.0324,
+    "longitude": 108.2232,
+    "source_record_id": "seed-dn-due"
+  },
+  {
+    "name": "Bệnh viện Đà Nẵng",
+    "type": "hospital",
+    "address": "124 Hải Phòng, Hải Châu, Đà Nẵng",
+    "latitude": 16.0669,
+    "longitude": 108.2145,
+    "source_record_id": "seed-dn-bvdn"
+  },
+  {
+    "name": "Petrolimex Điện Biên Phủ",
+    "type": "gas_station",
+    "address": "Điện Biên Phủ, Thanh Khê, Đà Nẵng",
+    "latitude": 16.0615,
+    "longitude": 108.192,
+    "source_record_id": "seed-dn-gas1"
+  },
+  {
+    "name": "Trạm sạc VinFast Đà Nẵng",
+    "type": "charging_station",
+    "address": "Hải Châu, Đà Nẵng",
+    "latitude": 16.0544,
+    "longitude": 108.2022,
+    "source_record_id": "seed-dn-charge1"
+  }
+]

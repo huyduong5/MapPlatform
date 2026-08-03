@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Cây xăng Petrolimex Láng Hạ",
+    "type": "gas_station",
+    "address": "Láng Hạ, Đống Đa, Hà Nội",
+    "latitude": 21.0168,
+    "longitude": 105.8125,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-gas-lang-ha",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Cây xăng Shell Cầu Giấy",
+    "type": "gas_station",
+    "address": "Cầu Giấy, Hà Nội",
+    "latitude": 21.0335,
+    "longitude": 105.794,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-gas-cau-giay",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Cây xăng PVOIL Minh Khai",
+    "type": "gas_station",
+    "address": "Minh Khai, Hai Bà Trưng, Hà Nội",
+    "latitude": 20.9955,
+    "longitude": 105.862,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-gas-minh-khai",
+    "source_url": "https://www.openstreetmap.org"
+  }
+]

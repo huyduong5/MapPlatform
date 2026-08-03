@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Đội cứu hộ Cầu Giấy",
+    "type": "rescue_team",
+    "address": "Đường Xuân Thuỷ, Cầu Giấy, Hà Nội",
+    "latitude": 21.0365,
+    "longitude": 105.7825,
+    "city": "hanoi",
+    "phone": "115",
+    "source_record_id": "osm-seed-rescue-cau-giay",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Trạm cứu hộ Long Biên",
+    "type": "rescue_team",
+    "address": "Nguyễn Văn Linh, Long Biên, Hà Nội",
+    "latitude": 21.0405,
+    "longitude": 105.886,
+    "city": "hanoi",
+    "phone": "115",
+    "source_record_id": "osm-seed-rescue-long-bien",
+    "source_url": "https://www.openstreetmap.org"
+  }
+]

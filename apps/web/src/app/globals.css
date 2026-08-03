@@ -1,0 +1,107 @@
+:root {
+  --bg: #f4f6f8;
+  --ink: #14212b;
+  --muted: #5c6b76;
+  --accent: #0b6e4f;
+  --panel: #ffffff;
+  --border: #d7dee4;
+  --danger: #b42318;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Segoe UI', 'Be Vietnam Pro', system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+/* Next.js root must fill viewport or flex map collapses on some window sizes */
+html,
+body,
+#__next {
+  height: 100%;
+}
+
+body > div {
+  min-height: 100%;
+}
+
+a {
+  color: var(--accent);
+}
+
+/* Leaflet DivIcon — inline SVG markers (mapIcons.ts) */
+.mp-marker-wrap {
+  background: transparent !important;
+  border: none !important;
+}
+
+.mp-marker {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+  transform-origin: center center;
+}
+
+.mp-marker--rec {
+  animation: mp-marker-pulse 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 1px 3px rgba(194, 65, 12, 0.45));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-marker--rec {
+    animation: none;
+  }
+}
+
+@keyframes mp-marker-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.mp-user-marker {
+  filter: drop-shadow(0 1px 2px rgba(37, 99, 235, 0.45));
+  transform-origin: center center;
+}
+
+/* Leaflet-style locate control on map */
+.mp-locate-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  background: #fff;
+  color: #14212b;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+}
+
+.mp-locate-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.mp-locate-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.mp-locate-btn.is-active {
+  color: #2563eb;
+  box-shadow: 0 0 0 2px #2563eb inset, 0 1px 4px rgba(0, 0, 0, 0.25);
+}

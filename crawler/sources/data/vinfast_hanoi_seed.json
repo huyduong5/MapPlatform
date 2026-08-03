@@ -1,0 +1,103 @@
+[
+  {
+    "name": "VinFast Times City",
+    "type": "store",
+    "address": "458 Minh Khai, Hai Bà Trưng, Hà Nội",
+    "latitude": 20.995,
+    "longitude": 105.862,
+    "phone": null,
+    "opening_hours": null,
+    "source_record_id": "vf-times-city",
+    "source_url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+  },
+  {
+    "name": "VinFast Royal City",
+    "type": "store",
+    "address": "72A Nguyễn Trãi, Thanh Xuân, Hà Nội",
+    "latitude": 20.9985,
+    "longitude": 105.8115,
+    "source_record_id": "vf-royal-city",
+    "source_url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+  },
+  {
+    "name": "VinFast Long Biên",
+    "type": "store",
+    "address": "Số 1 Nguyễn Văn Linh, Long Biên, Hà Nội",
+    "latitude": 21.0378,
+    "longitude": 105.888,
+    "source_record_id": "vf-long-bien",
+    "source_url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+  },
+  {
+    "name": "VinFast Mỹ Đình",
+    "type": "store",
+    "address": "Số 8 Phạm Hùng, Mai Dịch, Cầu Giấy, Hà Nội",
+    "latitude": 21.0283,
+    "longitude": 105.7789,
+    "source_record_id": "vf-my-dinh",
+    "source_url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+  },
+  {
+    "name": "VinFast Smart City",
+    "type": "store",
+    "address": "TTTM Vincom Megamall, Vinhomes Smart City, Tây Mỗ, Hà Nội",
+    "latitude": 20.9986,
+    "longitude": 105.7401,
+    "source_record_id": "vf-smart-city",
+    "source_url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+  },
+  {
+    "name": "Trạm sạc VinFast Times City",
+    "type": "charging_station",
+    "address": "458 Minh Khai, Hai Bà Trưng, Hà Nội",
+    "latitude": 20.9951,
+    "longitude": 105.8621,
+    "source_record_id": "vf-charge-times-city",
+    "source_url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+  },
+  {
+    "name": "Trạm sạc VinFast Royal City",
+    "type": "charging_station",
+    "address": "72A Nguyễn Trãi, Thanh Xuân, Hà Nội",
+    "latitude": 20.9986,
+    "longitude": 105.8116,
+    "source_record_id": "vf-charge-royal-city",
+    "source_url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+  },
+  {
+    "name": "Showroom VinFast Times City",
+    "type": "showroom",
+    "address": "Tầng L1, Vincom Mega Mall Times City, 458 Minh Khai, Hai Bà Trưng, Hà Nội",
+    "latitude": 20.9952,
+    "longitude": 105.868,
+    "source_record_id": "vf-showroom-times-city",
+    "source_url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+  },
+  {
+    "name": "Showroom VinFast Phạm Văn Đồng",
+    "type": "showroom",
+    "address": "Số 68 Phạm Văn Đồng, Cổ Nhuế, Bắc Từ Liêm, Hà Nội",
+    "latitude": 21.0665,
+    "longitude": 105.7852,
+    "source_record_id": "vf-showroom-pvd",
+    "source_url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+  },
+  {
+    "name": "Xưởng dịch vụ VinFast Long Biên",
+    "type": "service_center",
+    "address": "Số 1 Nguyễn Văn Linh, Long Biên, Hà Nội",
+    "latitude": 21.038,
+    "longitude": 105.889,
+    "source_record_id": "vf-service-long-bien",
+    "source_url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+  },
+  {
+    "name": "Xưởng dịch vụ VinFast Hà Đông",
+    "type": "service_center",
+    "address": "Đường Tố Hữu, Hà Đông, Hà Nội",
+    "latitude": 20.9845,
+    "longitude": 105.7858,
+    "source_record_id": "vf-service-ha-dong",
+    "source_url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac"
+  }
+]

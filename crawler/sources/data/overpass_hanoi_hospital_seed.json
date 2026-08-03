@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Bệnh viện Bạch Mai",
+    "type": "hospital",
+    "address": "78 Giải Phóng, Đống Đa, Hà Nội",
+    "latitude": 20.9998,
+    "longitude": 105.8405,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-hosp-bach-mai",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Bệnh viện Việt Đức",
+    "type": "hospital",
+    "address": "40 Tràng Thi, Hoàn Kiếm, Hà Nội",
+    "latitude": 21.0272,
+    "longitude": 105.8475,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-hosp-viet-duc",
+    "source_url": "https://www.openstreetmap.org"
+  },
+  {
+    "name": "Bệnh viện Nhi Trung ương",
+    "type": "hospital",
+    "address": "18/879 La Thành, Đống Đa, Hà Nội",
+    "latitude": 21.0215,
+    "longitude": 105.8118,
+    "city": "hanoi",
+    "source_record_id": "osm-seed-hosp-nhi",
+    "source_url": "https://www.openstreetmap.org"
+  }
+]

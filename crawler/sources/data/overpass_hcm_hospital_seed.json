@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Bệnh viện Chợ Rẫy",
+    "type": "hospital",
+    "address": "201B Nguyễn Chí Thanh, Quận 5, TP.HCM",
+    "latitude": 10.757795,
+    "longitude": 106.659512,
+    "source_record_id": "seed-hcm-choray"
+  },
+  {
+    "name": "Bệnh viện Đại học Y Dược TP.HCM",
+    "type": "hospital",
+    "address": "215 Hồng Bàng, Quận 5, TP.HCM",
+    "latitude": 10.7546,
+    "longitude": 106.6631,
+    "source_record_id": "seed-hcm-yd"
+  },
+  {
+    "name": "Bệnh viện Nhân dân 115",
+    "type": "hospital",
+    "address": "527 Sư Vạn Hạnh, Quận 10, TP.HCM",
+    "latitude": 10.7735,
+    "longitude": 106.6668,
+    "source_record_id": "seed-hcm-115"
+  }
+]

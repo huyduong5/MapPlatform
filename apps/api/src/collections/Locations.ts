@@ -1,0 +1,63 @@
+import type { CollectionConfig } from 'payload'
+
+export const Locations: CollectionConfig = {
+  slug: 'locations',
+  dbName: 'cms_locations',
+  admin: {
+    useAsTitle: 'name',
+    defaultColumns: ['name', 'type', 'status', 'address', 'updatedAt'],
+    description: 'CMS mirror — map public đọc bảng SQL `locations` qua /api/locations.',
+  },
+  fields: [
+    { name: 'name', type: 'text', required: true },
+    {
+      name: 'type',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'Charging station', value: 'charging_station' },
+        { label: 'Store', value: 'store' },
+        { label: 'Service center', value: 'service_center' },
+        { label: 'Showroom', value: 'showroom' },
+        { label: 'Dealer', value: 'dealer' },
+        { label: 'Parking', value: 'parking' },
+        { label: 'Rescue team', value: 'rescue_team' },
+        { label: 'Gas station', value: 'gas_station' },
+        { label: 'University', value: 'university' },
+        { label: 'Hospital', value: 'hospital' },
+        { label: 'Pharmacy', value: 'pharmacy' },
+        { label: 'ATM', value: 'atm' },
+        { label: 'Bank', value: 'bank' },
+        { label: 'Police', value: 'police' },
+        { label: 'Fire station', value: 'fire_station' },
+        { label: 'School', value: 'school' },
+        { label: 'Marketplace', value: 'marketplace' },
+      ],
+    },
+    { name: 'address', type: 'textarea', required: true },
+    { name: 'latitude', type: 'number', required: true, min: -90, max: 90 },
+    { name: 'longitude', type: 'number', required: true, min: -180, max: 180 },
+    {
+      name: 'status',
+      type: 'select',
+      required: true,
+      defaultValue: 'active',
+      options: [
+        { label: 'Active', value: 'active' },
+        { label: 'Inactive', value: 'inactive' },
+      ],
+    },
+    { name: 'phone', type: 'text' },
+    { name: 'openingHours', type: 'text' },
+    {
+      name: 'source',
+      type: 'relationship',
+      relationTo: 'sources',
+      required: true,
+    },
+    { name: 'sourceRecordId', type: 'text' },
+    { name: 'sourceUrl', type: 'text' },
+    { name: 'lastSeenAt', type: 'date', admin: { date: { pickerAppearance: 'dayAndTime' } } },
+    { name: 'lastUpdated', type: 'date', admin: { date: { pickerAppearance: 'dayAndTime' } } },
+  ],
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Đại học Huế",
+    "type": "university",
+    "address": "3 Lê Lợi, TP. Huế",
+    "latitude": 16.4592,
+    "longitude": 107.5922,
+    "source_record_id": "seed-hue-dhu"
+  },
+  {
+    "name": "Bệnh viện Trung ương Huế",
+    "type": "hospital",
+    "address": "16 Lê Lợi, TP. Huế",
+    "latitude": 16.4628,
+    "longitude": 107.5875,
+    "source_record_id": "seed-hue-bvtu"
+  }
+]

@@ -1,0 +1,101 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: mapplatform-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-geouser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-geopass}
+      POSTGRES_DB: ${POSTGRES_DB:-geo_platform}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - mapplatform_pgdata:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-geouser} -d ${POSTGRES_DB:-geo_platform}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - mapplatform
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: mapplatform-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-geouser}:${POSTGRES_PASSWORD:-geopass}@db:5432/${POSTGRES_DB:-geo_platform}
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:-change-me-payload-secret-min-32-chars}
+      PORT: 3001
+    ports:
+      - "${API_PORT:-3001}:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3001/api/locations?limit=1').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks:
+      - mapplatform
+
+  crawler:
+    build:
+      context: .
+      dockerfile: crawler/Dockerfile
+    container_name: mapplatform-crawler
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-geouser}:${POSTGRES_PASSWORD:-geopass}@db:5432/${POSTGRES_DB:-geo_platform}
+      CRAWL_TIMEZONE: ${CRAWL_TIMEZONE:-Asia/Ho_Chi_Minh}
+      CRAWL_SCHEDULE: ${CRAWL_SCHEDULE:-0 2 * * *}
+      CRAWL_ON_START: ${CRAWL_ON_START:-0}
+      OVERPASS_URL: ${OVERPASS_URL:-https://overpass-api.de/api/interpreter}
+      PHOTON_BASE_URL: ${PHOTON_BASE_URL:-https://photon.komoot.io/api/}
+      NOMINATIM_BASE_URL: ${NOMINATIM_BASE_URL:-https://nominatim.openstreetmap.org/search}
+      NOMINATIM_USER_AGENT: ${NOMINATIM_USER_AGENT:-MapPlatform-VinSmartFuture/1.0}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mapplatform
+    # one-shot: docker compose run --rm crawler python -m scheduler.run_once
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:3001}
+        NEXT_PUBLIC_MAP_TILE_URL: ${NEXT_PUBLIC_MAP_TILE_URL:-https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png}
+        NEXT_PUBLIC_MAP_ATTRIBUTION: ${NEXT_PUBLIC_MAP_ATTRIBUTION:-© OpenStreetMap contributors © CARTO}
+        NEXT_PUBLIC_MAP_DEFAULT_LAT: ${NEXT_PUBLIC_MAP_DEFAULT_LAT:-21.0285}
+        NEXT_PUBLIC_MAP_DEFAULT_LNG: ${NEXT_PUBLIC_MAP_DEFAULT_LNG:-105.8542}
+        NEXT_PUBLIC_MAP_DEFAULT_ZOOM: ${NEXT_PUBLIC_MAP_DEFAULT_ZOOM:-12}
+    container_name: mapplatform-web
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:3001}
+    ports:
+      - "${WEB_PORT:-3002}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - mapplatform
+
+volumes:
+  mapplatform_pgdata:
+
+networks:
+  mapplatform:
+    name: mapplatform_net
+    driver: bridge

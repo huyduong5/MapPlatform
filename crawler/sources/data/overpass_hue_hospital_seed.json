@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Bệnh viện Trung ương Huế",
+    "type": "hospital",
+    "address": "16 Lê Lợi, TP. Huế",
+    "latitude": 16.4628,
+    "longitude": 107.5875,
+    "source_record_id": "seed-hue-bvtu"
+  }
+]
