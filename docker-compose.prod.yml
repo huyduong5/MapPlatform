@@ -2,31 +2,27 @@
 #
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 #
-# Mục tiêu: không publish Postgres/API/Web ra internet; restart always; NODE_ENV=production.
+# Mục tiêu: không publish Postgres/App ra internet; restart always; NODE_ENV=production.
 
 services:
   db:
     ports: !reset []
     restart: always
 
-  api:
+  app:
     restart: always
     environment:
       NODE_ENV: production
-      CORS_ORIGINS: ${CORS_ORIGINS}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-60000}
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
       DATABASE_URL: postgresql://${POSTGRES_USER:-geouser}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-geo_platform}
-    ports: !reset []
-
-  web:
-    restart: always
-    environment:
-      NODE_ENV: production
+      PAYLOAD_JOBS_AUTORUN: ${PAYLOAD_JOBS_AUTORUN:-1}
+      CRAWL_EXEC: ${CRAWL_EXEC:-docker}
     ports: !reset []
     build:
       args:
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
         NEXT_PUBLIC_MAP_TILE_URL: ${NEXT_PUBLIC_MAP_TILE_URL:-https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png}
         NEXT_PUBLIC_MAP_ATTRIBUTION: ${NEXT_PUBLIC_MAP_ATTRIBUTION:-© OpenStreetMap contributors © CARTO}
 

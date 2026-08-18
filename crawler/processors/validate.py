@@ -25,6 +25,10 @@ ALLOWED_TYPES = {
     "fire_station",
     "school",
     "marketplace",
+    "bus_stop",
+    "subway_station",
+    "park",
+    "tourist_attraction",
 }
 
 

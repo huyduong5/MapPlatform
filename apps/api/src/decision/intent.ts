@@ -1,4 +1,12 @@
-import type { IntentType, LocationTypeFilter, ParsedIntent } from './types'
+import type { IntentType, LocationTypeFilter, ParsedIntent, VehicleKind } from './types'
+import {
+  applyVehicleDefaultOnlyForNeed,
+  detectLeisureIntent,
+  detectTripPurpose,
+  reconcileVehicleIntent,
+} from './agents/context'
+import { LANDMARK_ALIASES, matchAliasInQuery } from './places/catalog'
+import { detectVehicleKindFromQuery, isEv, parseVehicleKind } from './vehicle'
 
 function norm(s: string): string {
   return s.normalize('NFC').toLowerCase()
@@ -8,6 +16,8 @@ function fold(s: string): string {
   return s
     .normalize('NFD')
     .replace(/\p{M}/gu, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
     .toLowerCase()
 }
 
@@ -20,30 +30,17 @@ function includesAny(q: string, words: string[]): boolean {
 const BATTERY_RE =
   /(?:pin|battery|soc)\s*(?:còn|con|còn lại|con lai|=|:)?\s*(\d{1,3})\s*%?|\b(\d{1,3})\s*%\s*(?:pin|battery)?/i
 
-/** Known landmarks in Hà Nội — offline alias before Photon. */
-export const LANDMARK_ALIASES: Record<string, { lat: number; lng: number; label: string }> = {
-  'times city': { lat: 20.995, lng: 105.8682, label: 'Times City' },
-  'vincom times city': { lat: 20.995, lng: 105.8682, label: 'Times City' },
-  'aeon mall long biên': { lat: 21.0278, lng: 105.8995, label: 'AEON Mall Long Biên' },
-  'aeon mall long bien': { lat: 21.0278, lng: 105.8995, label: 'AEON Mall Long Biên' },
-  'hoàn kiếm': { lat: 21.0285, lng: 105.8542, label: 'Hồ Hoàn Kiếm' },
-  'hoan kiem': { lat: 21.0285, lng: 105.8542, label: 'Hồ Hoàn Kiếm' },
-  'hồ hoàn kiếm': { lat: 21.0285, lng: 105.8542, label: 'Hồ Hoàn Kiếm' },
-  'big c thắng lợi': { lat: 21.0025, lng: 105.815, label: 'Big C Thăng Lợi' },
-  'royal city': { lat: 21.0028, lng: 105.8155, label: 'Royal City' },
-  'lăng bác': { lat: 21.0368, lng: 105.8347, label: 'Lăng Chủ tịch Hồ Chí Minh' },
-  'ga hà nội': { lat: 21.0245, lng: 105.8412, label: 'Ga Hà Nội' },
-  'ga ha noi': { lat: 21.0245, lng: 105.8412, label: 'Ga Hà Nội' },
-  'sân bay nội bài': { lat: 21.2187, lng: 105.8042, label: 'Sân bay Nội Bài' },
-  'noi bai': { lat: 21.2187, lng: 105.8042, label: 'Sân bay Nội Bài' },
-  'cầu giấy': { lat: 21.0305, lng: 105.782, label: 'Cầu Giấy' },
-  'cau giay': { lat: 21.0305, lng: 105.782, label: 'Cầu Giấy' },
-  'gia lâm': { lat: 21.0095, lng: 105.9382, label: 'Gia Lâm' },
-  'gia lam': { lat: 21.0095, lng: 105.9382, label: 'Gia Lâm' },
-}
+/** @deprecated Prefer places/catalog — re-exported for tests / older imports. */
+export { LANDMARK_ALIASES }
 
 const LANDMARK_HINT_RE =
-  /(?:gần|gan|ở|o|tại|tai|near|around)\s+([A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s.'-]{1,40}?)(?=[,.]|\s+pin\b|\s+tìm\b|\s+tim\b|$)/i
+  /(?:(?:tôi|toi|mình|minh|em|anh|chị|chi)\s+)?(?:muốn|muon|cần|can)\s+(?:đi|di|tới|toi|đến|den|về|ve)\s+(?:tới|toi|đến|den|về|ve|lại|lai)?\s*([A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s.'-]{1,60}?)(?=[,.]|\s+pin\b|\s+tìm\b|\s+tim\b|\s+thì\b|\s+thi\b|\s+để\b|\s+de\b|\s+với\b|\s+voi\b|$)/i
+
+const GO_TO_RE =
+  /(?:đi|di)\s+(?:tới|toi|đến|den)?\s*([A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s.'-]{1,60}?)(?=[,.]|\s+pin\b|\s+thì\b|\s+thi\b|$)/i
+
+const GO_TO_DEN_RE =
+  /(?:(?:^|\s)(?:đến|den|về|ve)\s+|chỉ\s*đường\s+(?:đến|den|tới|toi)\s+|chi\s*duong\s+(?:den|toi)\s+)([A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s.'-]{1,60}?)(?=[,.]|\s+pin\b|\s+thì\b|\s+thi\b|$)/i
 
 function extractBattery(query: string): number | null {
   const m = query.match(BATTERY_RE)
@@ -53,16 +50,31 @@ function extractBattery(query: string): number | null {
   return n
 }
 
-function extractLandmark(query: string): string | null {
-  const lower = norm(query)
-  for (const key of Object.keys(LANDMARK_ALIASES)) {
-    if (lower.includes(norm(key))) return LANDMARK_ALIASES[key].label
+function cleanLandmarkRaw(raw: string): string | null {
+  let t = raw.trim().replace(/\s+/g, ' ')
+  t = t
+    .replace(
+      /\b(hà nội|ha noi|vn|việt nam|viet nam|trung tâm thương mại|trung tam thuong mai|tttm|mall)\b/gi,
+      ' ',
+    )
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (t.length < 2) return null
+  return t
+}
+
+export function extractLandmark(query: string): string | null {
+  const aliasHit = matchAliasInQuery(query, 'hanoi')
+  if (aliasHit) return aliasHit.label
+
+  for (const re of [GO_TO_RE, GO_TO_DEN_RE, LANDMARK_HINT_RE]) {
+    const m = query.match(re)
+    if (m?.[1]) {
+      const cleaned = cleanLandmarkRaw(m[1])
+      if (cleaned) return cleaned
+    }
   }
-  const m = query.match(LANDMARK_HINT_RE)
-  if (!m?.[1]) return null
-  const raw = m[1].trim().replace(/\s+/g, ' ')
-  if (raw.length < 2) return null
-  return raw.replace(/\b(hà nội|ha noi|vn|việt nam)\b/gi, '').trim() || null
+  return null
 }
 
 function urgencyFromBattery(battery: number | null): ParsedIntent['urgency'] {
@@ -72,10 +84,31 @@ function urgencyFromBattery(battery: number | null): ParsedIntent['urgency'] {
   return 'normal'
 }
 
+function hasUrgentNeed(query: string): boolean {
+  return includesAny(query, [
+    'hết xăng',
+    'het xang',
+    'sắp hết xăng',
+    'sap het xang',
+    'cứu hộ',
+    'cuu ho',
+    'hỏng xe',
+    'hong xe',
+    'hết pin',
+    'het pin',
+    'pin yếu',
+    'pin yeu',
+  ])
+}
+
 function detectIntent(query: string, battery: number | null): {
   intent: IntentType
   locationType: LocationTypeFilter
 } {
+  if (detectLeisureIntent(query)) {
+    return { intent: 'explore_area', locationType: null }
+  }
+
   const hasCharging = includesAny(query, [
     'trạm sạc',
     'tram sac',
@@ -123,6 +156,8 @@ function detectIntent(query: string, battery: number | null): {
     'tram xang',
     'xăng dầu',
     'xang dau',
+    'hết xăng',
+    'het xang',
     'gas station',
     'petrol',
     'fuel',
@@ -155,12 +190,20 @@ function detectIntent(query: string, battery: number | null): {
     'near me',
     'xung quanh',
   ])
+  const hasNavigate = includesAny(query, [
+    'chỉ đường',
+    'chi duong',
+    'dẫn đường',
+    'dan duong',
+    'hướng đi',
+    'huong di',
+  ])
 
   if (hasRescue) return { intent: 'find_rescue', locationType: 'rescue_team' }
-  if (hasHospital) return { intent: 'find_hospital', locationType: 'hospital' }
+  if (hasHospital && hasNearby) return { intent: 'find_hospital', locationType: 'hospital' }
   if (hasGas) return { intent: 'find_gas', locationType: 'gas_station' }
-  if (hasUniversity) return { intent: 'find_university', locationType: 'university' }
-  if (hasParking) return { intent: 'find_parking', locationType: 'parking' }
+  if (hasUniversity && hasNearby) return { intent: 'find_university', locationType: 'university' }
+  if (hasParking && hasNearby) return { intent: 'find_parking', locationType: 'parking' }
   if (hasDealer) return { intent: 'find_dealer', locationType: 'dealer' }
   if (hasCharging && !hasStore && !hasShowroom && !hasService) {
     return { intent: 'find_charging', locationType: 'charging_station' }
@@ -171,31 +214,147 @@ function detectIntent(query: string, battery: number | null): {
   if (battery != null && battery <= 40) {
     return { intent: 'find_charging', locationType: 'charging_station' }
   }
+  if (hasNavigate) return { intent: 'navigate_to', locationType: null }
+  if (hasUniversity) return { intent: 'find_university', locationType: 'university' }
+  if (hasHospital) return { intent: 'find_hospital', locationType: 'hospital' }
+  if (hasParking) return { intent: 'find_parking', locationType: 'parking' }
   if (hasNearby) return { intent: 'find_nearby', locationType: null }
-  if (includesAny(query, ['phù hợp', 'phu hop', 'recommend', 'gợi ý', 'goi y'])) {
-    return { intent: 'find_charging', locationType: 'charging_station' }
-  }
   return { intent: 'unknown', locationType: null }
 }
 
-export function parseIntentRules(query: string): ParsedIntent {
+export function parseIntentRules(
+  query: string,
+  opts?: { vehicleKind?: VehicleKind | null },
+): ParsedIntent {
   const rawQuery = query.trim()
   const batteryPercent = extractBattery(rawQuery)
   const landmark = extractLandmark(rawQuery)
-  const { intent, locationType } = detectIntent(rawQuery, batteryPercent)
-  return {
+  const vehicleKind =
+    parseVehicleKind(opts?.vehicleKind) || detectVehicleKindFromQuery(rawQuery)
+  let { intent, locationType } = detectIntent(rawQuery, batteryPercent)
+
+  if (
+    landmark &&
+    !hasUrgentNeed(rawQuery) &&
+    intent !== 'explore_area' &&
+    !detectLeisureIntent(rawQuery)
+  ) {
+    const goToPlace = includesAny(rawQuery, [
+      'đi ',
+      'di ',
+      'đi tới',
+      'đi đến',
+      'tới ',
+      'đến ',
+      'den ',
+      'chỉ đường',
+      'chi duong',
+      'dẫn đường',
+      'dan duong',
+      'muốn đi',
+      'muon di',
+      'muốn đến',
+      'muon den',
+    ])
+    const findNearLandmark = includesAny(rawQuery, [
+      'tìm',
+      'tim ',
+      'tìm kiếm',
+      'gần nhất',
+      'gan nhat',
+      'gần đây',
+      'near me',
+    ])
+    if (goToPlace && !findNearLandmark) {
+      intent = 'navigate_to'
+      locationType = null
+    } else if (
+      goToPlace &&
+      (intent === 'find_university' || intent === 'unknown' || intent === 'find_nearby')
+    ) {
+      intent = 'navigate_to'
+      locationType = null
+    }
+  }
+
+  const preliminaryPurpose = detectTripPurpose(rawQuery, {
+    intent,
+    batteryPercent,
+    vehicleKind,
+    hasDestinationHint: Boolean(landmark),
+  })
+
+  const applied = applyVehicleDefaultOnlyForNeed(
+    intent,
+    locationType,
+    vehicleKind,
+    preliminaryPurpose,
+  )
+  intent = applied.intent
+  locationType = applied.locationType
+
+  if (
+    preliminaryPurpose !== 'leisure' &&
+    preliminaryPurpose !== 'navigate' &&
+    vehicleKind &&
+    isEv(vehicleKind) &&
+    batteryPercent != null &&
+    intent === 'find_gas'
+  ) {
+    intent = 'find_charging'
+    locationType = 'charging_station'
+  }
+  if (
+    preliminaryPurpose !== 'leisure' &&
+    preliminaryPurpose !== 'navigate' &&
+    vehicleKind &&
+    !isEv(vehicleKind) &&
+    intent === 'find_charging'
+  ) {
+    intent = 'find_gas'
+    locationType = 'gas_station'
+  }
+
+  const tripPurpose = detectTripPurpose(rawQuery, {
+    intent,
+    batteryPercent,
+    vehicleKind,
+    hasDestinationHint: Boolean(landmark),
+  })
+
+  const parsed: ParsedIntent = {
     intent,
     locationType,
     landmark,
     batteryPercent,
-    urgency: urgencyFromBattery(batteryPercent),
+    urgency:
+      tripPurpose === 'need_urgent'
+        ? batteryPercent != null
+          ? urgencyFromBattery(batteryPercent)
+          : 'high'
+        : urgencyFromBattery(batteryPercent),
     rawQuery,
     source: 'rules',
+    vehicleKind,
+    destinationLandmark: landmark,
+    tripPurpose,
   }
+
+  return reconcileVehicleIntent(parsed)
 }
 
 export function mergeIntent(base: ParsedIntent, override: Partial<ParsedIntent>): ParsedIntent {
   const merged = { ...base, ...override, rawQuery: base.rawQuery }
   merged.urgency = urgencyFromBattery(merged.batteryPercent)
-  return merged
+  if (!merged.tripPurpose) {
+    merged.tripPurpose = detectTripPurpose(merged.rawQuery, {
+      intent: merged.intent,
+      batteryPercent: merged.batteryPercent,
+      vehicleKind: merged.vehicleKind,
+      hasDestinationHint: Boolean(merged.landmark || merged.destinationLandmark),
+    })
+  }
+  return reconcileVehicleIntent(merged)
 }
+
+export { reconcileVehicleIntent, detectTripPurpose }

@@ -1,4 +1,7 @@
-/** Shared city registry — multi-city foundation + Wave 4 expansions */
+/**
+ * Hardcoded city registry — seed + fallback only.
+ * Source of truth at runtime = Payload Admin → Cities collection.
+ */
 
 export type CityCode = 'hanoi' | 'hcm' | 'danang' | 'haiphong' | 'cantho' | 'hue'
 
@@ -76,4 +79,10 @@ export function isCityCode(v: string | null | undefined): v is CityCode {
 
 export function parseCity(v: string | null | undefined, fallback: CityCode = 'hanoi'): CityCode {
   return isCityCode(v) ? v : fallback
+}
+
+export function cityContains(city: CityCode, lat: number, lng: number): boolean {
+  const b = CITIES[city]?.bbox
+  if (!b) return false
+  return lat >= b.minLat && lat <= b.maxLat && lng >= b.minLng && lng <= b.maxLng
 }

@@ -6,6 +6,8 @@ export async function queryNearbyCandidates(params: {
   anchor: AnchorPoint
   radiusMeters: number
   locationType: LocationTypeFilter
+  /** When set, overrides locationType with ANY match. */
+  locationTypes?: string[]
   limit: number
   city?: CityCode
 }): Promise<CandidateLocation[]> {
@@ -17,7 +19,10 @@ export async function queryNearbyCandidates(params: {
     Math.min(params.limit * 3, 50),
   ]
   let extra = ''
-  if (params.locationType) {
+  if (params.locationTypes?.length) {
+    sqlParams.push(params.locationTypes)
+    extra += ` AND l.type = ANY($${sqlParams.length}::text[])`
+  } else if (params.locationType) {
     sqlParams.push(params.locationType)
     extra += ` AND l.type = $${sqlParams.length}`
   }

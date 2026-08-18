@@ -1,18 +1,21 @@
-export default function HomePage() {
-  return (
-    <main style={{ fontFamily: 'system-ui', padding: 24 }}>
-      <h1>MapPlatform API</h1>
-      <p>Payload Admin: <a href="/admin">/admin</a></p>
-      <ul>
-        <li>
-          <a href="/api/locations">GET /api/locations</a>
-        </li>
-        <li>
-          <a href="/api/locations/nearby?latitude=20.995&longitude=105.862&radius=5000">
-            GET /api/locations/nearby
-          </a>
-        </li>
-      </ul>
-    </main>
-  )
+import { LandingPage } from '@/components/landing/LandingPage'
+import { getPool } from '@/lib/db'
+
+export const dynamic = 'force-dynamic'
+
+async function fetchPoiCount(): Promise<number | null> {
+  try {
+    const pool = getPool()
+    const { rows } = await pool.query<{ c: number }>(
+      `SELECT COUNT(*)::int AS c FROM locations WHERE status = 'active'`,
+    )
+    return rows[0]?.c ?? null
+  } catch {
+    return null
+  }
+}
+
+export default async function HomePage() {
+  const poiCount = await fetchPoiCount()
+  return <LandingPage poiCount={poiCount} />
 }

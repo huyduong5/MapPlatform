@@ -1,10 +1,11 @@
 # Đổi yourdomain.com thành domain thật trước khi deploy.
-# DNS A record của map.* và api.* phải trỏ về IP VPS.
+# DNS A record trỏ về IP VPS. Monolith: một origin cho map + admin + API.
 
 {
 	email {$CADDY_ACME_EMAIL}
 }
 
+# Primary: map + /admin + /api on one host
 map.{$DOMAIN:yourdomain.com} {
 	encode gzip
 	header {
@@ -13,9 +14,10 @@ map.{$DOMAIN:yourdomain.com} {
 		Referrer-Policy strict-origin-when-cross-origin
 		-Server
 	}
-	reverse_proxy web:3000
+	reverse_proxy app:3001
 }
 
+# Optional alias — same monolith (backward-compatible hostname)
 api.{$DOMAIN:yourdomain.com} {
 	encode gzip
 	header {
@@ -24,5 +26,5 @@ api.{$DOMAIN:yourdomain.com} {
 		Referrer-Policy strict-origin-when-cross-origin
 		-Server
 	}
-	reverse_proxy api:3001
+	reverse_proxy app:3001
 }

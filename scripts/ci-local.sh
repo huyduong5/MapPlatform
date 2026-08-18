@@ -39,20 +39,20 @@ docker compose run --rm -e PYTHONPATH=/app crawler pytest -q
 echo "== integration DB =="
 pnpm test:integration
 
-echo "== smoke (requires API+web) =="
+echo "== smoke (requires monolith app on :3001) =="
 if curl -sf "http://localhost:3001/api/locations?limit=1" >/dev/null \
-  && curl -sf "http://localhost:3002/" >/dev/null; then
+  && curl -sf "http://localhost:3001/" >/dev/null; then
   ./scripts/smoke-api.sh
   ./scripts/alert-crawl-fail.sh || true
   if command -v pnpm >/dev/null; then
-    echo "== playwright e2e =="
+    echo "== playwright e2e (legacy apps/web; optional) =="
     pnpm --filter @mapplatform/web exec playwright test || {
       echo "Playwright failed — ensure browsers installed: pnpm --filter @mapplatform/web exec playwright install chromium"
       exit 1
     }
   fi
 else
-  echo "SKIP smoke/e2e (API :3001 or WEB :3002 not up). Start with pnpm dev:api & pnpm dev:web"
+  echo "SKIP smoke/e2e (app :3001 not up). Start with: docker compose up -d db && pnpm --filter @mapplatform/api dev"
 fi
 
 echo "CI LOCAL PASSED"

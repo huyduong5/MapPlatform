@@ -1,6 +1,6 @@
 'use client'
 
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { useEffect, useRef } from 'react'
 import type { LocationSummary } from '@/types/location'
@@ -290,6 +290,7 @@ export function MapView({
   highlightIds,
   anchor,
   radiusMeters,
+  routeGeometry,
   onBoundsChange,
   onZoomChange,
   lockFit,
@@ -307,6 +308,8 @@ export function MapView({
   highlightIds?: Set<string>
   anchor?: { latitude: number; longitude: number } | null
   radiusMeters?: number | null
+  /** GeoJSON LineString coordinates [lng, lat][] from decide */
+  routeGeometry?: Array<[number, number]> | null
   onBoundsChange?: (b: MapBounds) => void
   onZoomChange?: (z: number) => void
   lockFit?: boolean
@@ -322,6 +325,10 @@ export function MapView({
   const mapZoom = zoom ?? DEFAULT_ZOOM
   const userAcc = userLocation ? accuracyRadius(userLocation.accuracy) : null
   const userIcon = makeUserLocationIcon()
+  const routeLatLngs =
+    routeGeometry && routeGeometry.length >= 2
+      ? routeGeometry.map(([lng, lat]) => [lat, lng] as [number, number])
+      : null
 
   return (
     <MapContainer
@@ -350,6 +357,12 @@ export function MapView({
           center={[anchor.latitude, anchor.longitude]}
           radius={radiusMeters}
           pathOptions={{ color: '#0b6e4f', weight: 1, fillOpacity: 0.06 }}
+        />
+      ) : null}
+      {routeLatLngs ? (
+        <Polyline
+          positions={routeLatLngs}
+          pathOptions={{ color: '#0b6e4f', weight: 5, opacity: 0.85 }}
         />
       ) : null}
       {userLocation && userAcc != null ? (

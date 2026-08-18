@@ -1,7 +1,13 @@
-"""City registry for crawler — mirrors apps/api + apps/web cities.ts."""
+"""City registry for crawler.
+
+Source of truth at runtime: Payload Cities (injected as CITIES_JSON before job).
+Hardcoded CITIES below is seed/fallback only — do not require admins to edit this file.
+"""
 
 from __future__ import annotations
 
+import json
+import os
 from typing import NamedTuple
 
 
@@ -20,7 +26,8 @@ class CityConfig(NamedTuple):
     bbox: CityBbox
 
 
-CITIES: dict[str, CityConfig] = {
+# Fallback / seed — mirrors apps/api/src/lib/cities.ts
+_FALLBACK_CITIES: dict[str, CityConfig] = {
     "hanoi": CityConfig(
         code="hanoi",
         name="Hà Nội",
@@ -64,6 +71,43 @@ CITIES: dict[str, CityConfig] = {
         bbox=CityBbox(16.35, 16.55, 107.45, 107.7),
     ),
 }
+
+
+def _load_from_env() -> dict[str, CityConfig] | None:
+    raw = os.environ.get("CITIES_JSON", "").strip()
+    if not raw:
+        return None
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict) or not data:
+        return None
+
+    out: dict[str, CityConfig] = {}
+    for code, cfg in data.items():
+        if not isinstance(cfg, dict):
+            continue
+        bbox_raw = cfg.get("bbox") or {}
+        try:
+            out[str(code)] = CityConfig(
+                code=str(cfg.get("code") or code),
+                name=str(cfg.get("name") or code),
+                lat=float(cfg["lat"] if "lat" in cfg else cfg["latitude"]),
+                lng=float(cfg["lng"] if "lng" in cfg else cfg["longitude"]),
+                bbox=CityBbox(
+                    float(bbox_raw.get("min_lat", bbox_raw.get("minLat"))),
+                    float(bbox_raw.get("max_lat", bbox_raw.get("maxLat"))),
+                    float(bbox_raw.get("min_lng", bbox_raw.get("minLng"))),
+                    float(bbox_raw.get("max_lng", bbox_raw.get("maxLng"))),
+                ),
+            )
+        except (KeyError, TypeError, ValueError):
+            continue
+    return out or None
+
+
+CITIES: dict[str, CityConfig] = _load_from_env() or dict(_FALLBACK_CITIES)
 
 ALL_CITY_CODES = list(CITIES.keys())
 CITY_BBOX: dict[str, CityBbox] = {code: cfg.bbox for code, cfg in CITIES.items()}

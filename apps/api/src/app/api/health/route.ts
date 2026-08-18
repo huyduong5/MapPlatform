@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest) {
       success: true,
       data: {
         status: 'ok',
-        service: 'mapplatform-api',
+        service: 'mapplatform-app',
         phase: 6,
         db: { ok: true, latencyMs: dbMs },
         time: new Date().toISOString(),

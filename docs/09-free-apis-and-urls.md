@@ -110,6 +110,14 @@ User-Agent: MapPlatform-VinSmartFuture/1.0 (contact: your-email@example.com)
 | Payload Admin | `http://localhost:3001/admin` | `https://api.yourdomain.com/admin` |
 | Map UI | `http://localhost:3000` | `https://map.yourdomain.com` |
 
+**Decide AI / routing:**
+
+| Thành phần | Provider mặc định | Ghi chú |
+|---|---|---|
+| NLU | Rules (+ optional **Gemini** / Ollama) | `GEMINI_API_KEY` chỉ trong `.env` local — không commit |
+| Routing | **OSRM** public `$0` | `OSRM_BASE_URL`; fallback haversine |
+| Directions UI | Google Maps **deep-link** | Không SDK / không Directions API mặc định |
+
 Contract: [`openapi.yaml`](./openapi.yaml).
 
 ### 3.4. Deep-link miễn phí (không SDK)

@@ -24,8 +24,19 @@ def run_job() -> None:
 
 def main() -> None:
     load_dotenv(ROOT.parent / ".env")
+    # Payload Admin owns the 6h schedule by default — keep this daemon off unless explicitly enabled.
+    if os.getenv("CRAWL_ENABLE_SCHEDULER", "0") != "1":
+        log.info(
+            "Python APScheduler disabled (CRAWL_ENABLE_SCHEDULER!=1). "
+            "Auto crawl = Payload scheduleCrawl every 6h. Idling for docker compose run one-shots."
+        )
+        import time
+
+        while True:
+            time.sleep(3600)
+
     tz = os.getenv("CRAWL_TIMEZONE", "Asia/Ho_Chi_Minh")
-    # Default: 02:00 every day
+    # Default: 02:00 every day (legacy; prefer Payload 6h schedule)
     schedule = os.getenv("CRAWL_SCHEDULE", "0 2 * * *").split()
     if len(schedule) != 5:
         minute, hour = "0", "2"

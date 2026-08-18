@@ -28,6 +28,9 @@ importers:
       graphql:
         specifier: ^16.10.0
         version: 16.14.2
+      leaflet:
+        specifier: ^1.9.4
+        version: 1.9.4
       next:
         specifier: 15.2.9
         version: 15.2.9(@playwright/test@1.62.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.77.4)
@@ -43,10 +46,16 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.2.8(react@19.2.8)
+      react-leaflet:
+        specifier: ^5.0.0
+        version: 5.0.0(leaflet@1.9.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
     devDependencies:
+      '@types/leaflet':
+        specifier: ^1.9.16
+        version: 1.9.21
       '@types/node':
         specifier: ^22.13.10
         version: 22.20.1
@@ -1113,6 +1122,13 @@ packages:
       leaflet: ^1.9.0
       react: ^18.0.0
       react-dom: ^18.0.0
+
+  '@react-leaflet/core@3.0.0':
+    resolution: {integrity: sha512-3EWmekh4Nz+pGcr+xjf0KNyYfC3U2JjnkWsh0zcqaexYqmmB5ZhH37kz41JXGmKzpaMZCnPofBBm64i+YrEvGQ==}
+    peerDependencies:
+      leaflet: ^1.9.0
+      react: ^19.0.0
+      react-dom: ^19.0.0
 
   '@rollup/rollup-android-arm-eabi@4.62.3':
     resolution: {integrity: sha512-c0wdcekXtQvvn5Tsrk/+op/gUArrbWaFduBnTLP2l1cKLSQs4diMWjJw3m6A0DdzT8dAAX95KpkJ3qynCePbmw==}
@@ -2358,6 +2374,13 @@ packages:
       leaflet: ^1.9.0
       react: ^18.0.0
       react-dom: ^18.0.0
+
+  react-leaflet@5.0.0:
+    resolution: {integrity: sha512-CWbTpr5vcHw5bt9i4zSlPEVQdTVcML390TjeDG0cK59z1ylexpqC6M1PJFjV8jD7CF+ACBFsLIDs6DRMoLEofw==}
+    peerDependencies:
+      leaflet: ^1.9.0
+      react: ^19.0.0
+      react-dom: ^19.0.0
 
   react-select@5.9.0:
     resolution: {integrity: sha512-nwRKGanVHGjdccsnzhFte/PULziueZxGD8LL2WojON78Mvnq7LdAMEtu2frrwld1fr3geixg3iiMBIc/LLAZpw==}
@@ -3784,6 +3807,12 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
+  '@react-leaflet/core@3.0.0(leaflet@1.9.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+    dependencies:
+      leaflet: 1.9.4
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
+
   '@rollup/rollup-android-arm-eabi@4.62.3':
     optional: true
 
@@ -5108,6 +5137,13 @@ snapshots:
       leaflet: 1.9.4
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+
+  react-leaflet@5.0.0(leaflet@1.9.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+    dependencies:
+      '@react-leaflet/core': 3.0.0(leaflet@1.9.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      leaflet: 1.9.4
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
 
   react-select@5.9.0(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:

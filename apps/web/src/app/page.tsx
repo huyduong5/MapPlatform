@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { LocationDetail, LocationSummary } from '@/types/location'
+import type { LocationDetail as LocationDetailData, LocationSummary } from '@/types/location'
 import {
   getCities,
   getLocationById,
@@ -14,10 +14,10 @@ import {
   type MapBounds,
 } from '@/services/locationApi'
 import { invalidateLocationCache } from '@/services/locationCache'
-import { decide, type DecideResult } from '@/services/decisionApi'
+import { decide, type DecideResult, type VehicleKind } from '@/services/decisionApi'
 import { Header } from '@/components/Header'
 import { LayerControl, type LayerKey } from '@/components/LayerControl'
-import { LocationDetail } from '@/components/LocationDetail'
+import { LocationDetailPanel } from '@/components/LocationDetail'
 import { DecisionPanel } from '@/components/DecisionPanel'
 import { CitySwitcher } from '@/components/CitySwitcher'
 import { CITIES, cityContains, parseCity, type CityCode } from '@/lib/cities'
@@ -76,12 +76,13 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [visibility, setVisibility] = useState(ALL_ON)
-  const [selected, setSelected] = useState<LocationSummary | LocationDetail | null>(null)
+  const [selected, setSelected] = useState<LocationSummary | LocationDetailData | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const detailAbortRef = useRef<AbortController | null>(null)
   const [query, setQuery] = useState('')
   const [decision, setDecision] = useState<DecideResult | null>(null)
   const [deciding, setDeciding] = useState(false)
+  const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
   const [flyToUserToken, setFlyToUserToken] = useState(0)
   const boundsRef = useRef<MapBounds | null>(null)
   const zoomRef = useRef<number>(12)
@@ -412,20 +413,30 @@ export default function HomePage() {
     void load(boundsRef.current, city, { skipCache: true })
   }
 
-  const onDecide = (q: string, useMyLocation: boolean) => {
+  const onDecide = (params: {
+    query: string
+    useMyLocation: boolean
+    vehicleKind: VehicleKind
+    batteryPercent?: number
+  }) => {
     const run = async (lat?: number, lng?: number) => {
       setDeciding(true)
       setError(null)
       setInfo(null)
       try {
         const data = await decide({
-          query: q,
+          query: params.query,
           latitude: lat,
           longitude: lng,
           limit: 3,
           city,
+          vehicle: {
+            kind: params.vehicleKind,
+            batteryPercent: params.batteryPercent,
+          },
         })
         setDecision(data)
+        setActiveRouteId(data.recommendations[0]?.id || null)
         setLocations((prev) => {
           const byId = new Map(prev.map((l) => [l.id, l]))
           for (const r of data.recommendations) byId.set(r.id, r)
@@ -441,7 +452,7 @@ export default function HomePage() {
       }
     }
 
-    if (useMyLocation) {
+    if (params.useMyLocation) {
       void (async () => {
         try {
           const pos = await startGeo()
@@ -455,6 +466,13 @@ export default function HomePage() {
     }
     void run()
   }
+
+  const routeGeometry = useMemo(() => {
+    if (!decision?.recommendations.length) return null
+    const id = activeRouteId || decision.recommendations[0]?.id
+    const rec = decision.recommendations.find((r) => r.id === id) || decision.recommendations[0]
+    return rec?.route?.coordinates || null
+  }, [decision, activeRouteId])
 
   const showEmptyBanner =
     !loading && !error && mapLocations.length === 0 && !resultLock
@@ -517,7 +535,17 @@ export default function HomePage() {
             )}
           </div>
         )}
-        <DecisionPanel onDecide={onDecide} result={decision} loading={deciding} />
+        <DecisionPanel
+          onDecide={onDecide}
+          result={decision}
+          loading={deciding}
+          activeRouteId={activeRouteId}
+          onSelectRecommendation={(id) => {
+            setActiveRouteId(id)
+            const rec = decision?.recommendations.find((r) => r.id === id)
+            if (rec) setSelected(rec)
+          }}
+        />
         <MapView
           key={city}
           center={[cityMeta.latitude, cityMeta.longitude]}
@@ -528,6 +556,7 @@ export default function HomePage() {
           highlightIds={highlightIds}
           anchor={decision?.anchor || null}
           radiusMeters={decision?.radiusMeters || null}
+          routeGeometry={routeGeometry}
           onBoundsChange={onBoundsChange}
           onZoomChange={onZoomChange}
           lockFit={!resultLock}
@@ -538,7 +567,7 @@ export default function HomePage() {
           onToggleLocate={onToggleLocate}
         />
         {selected && (
-          <LocationDetail
+          <LocationDetailPanel
             location={selected}
             onClose={() => {
               detailAbortRef.current?.abort()

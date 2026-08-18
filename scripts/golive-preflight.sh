@@ -5,8 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-API="${API_BASE_URL:-http://localhost:3001}"
-WEB="${WEB_BASE_URL:-http://localhost:3002}"
+API="${API_BASE_URL:-${APP_BASE_URL:-http://localhost:3001}}"
 FAIL=0
 
 ok() { echo "  OK  $*"; }
@@ -38,21 +37,16 @@ else
   bad "prod compose config invalid (is Docker running?)"
 fi
 
-echo "-- local API/web (optional if not running) --"
+echo "-- local app (optional if not running) --"
 if curl -sf "$API/api/health" >/dev/null 2>&1; then
-  ok "API health $API"
+  ok "APP health $API"
+  curl -sf "$API/" >/dev/null && ok "GET / (map)" || bad "GET / (map)"
   curl -sf "$API/api/locations?limit=1" >/dev/null && ok "GET /api/locations" || bad "GET /api/locations"
   curl -sf -X POST "$API/api/decide" -H 'Content-Type: application/json' \
     -d '{"query":"trạm sạc gần Times City","limit":1}' >/dev/null \
     && ok "POST /api/decide" || bad "POST /api/decide"
 else
-  skip "API not up at $API — start pnpm dev:api or compose"
-fi
-
-if curl -sf "$WEB/" >/dev/null 2>&1; then
-  ok "WEB $WEB"
-else
-  skip "WEB not up at $WEB — start pnpm dev:web or compose"
+  skip "App not up at $API — start pnpm --filter @mapplatform/api dev or compose"
 fi
 
 echo "-- ops blockers (manual; cannot auto-complete) --"

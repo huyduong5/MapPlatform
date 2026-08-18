@@ -20,19 +20,33 @@ services:
     networks:
       - mapplatform
 
-  api:
+  # Monolith: Payload Admin + map UI + REST (formerly `api`; map was `web`)
+  app:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    container_name: mapplatform-api
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
+        NEXT_PUBLIC_MAP_TILE_URL: ${NEXT_PUBLIC_MAP_TILE_URL:-https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png}
+        NEXT_PUBLIC_MAP_ATTRIBUTION: ${NEXT_PUBLIC_MAP_ATTRIBUTION:-© OpenStreetMap contributors © CARTO}
+    container_name: mapplatform-app
     restart: unless-stopped
     env_file: .env
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-geouser}:${POSTGRES_PASSWORD:-geopass}@db:5432/${POSTGRES_DB:-geo_platform}
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:-change-me-payload-secret-min-32-chars}
       PORT: 3001
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
+      CRAWL_EXEC: ${CRAWL_EXEC:-docker}
+      COMPOSE_PROJECT_DIR: /repo
+      PAYLOAD_JOBS_AUTORUN: ${PAYLOAD_JOBS_AUTORUN:-1}
+      PAYLOAD_PUSH: ${PAYLOAD_PUSH:-1}
     ports:
-      - "${API_PORT:-3001}:3001"
+      - "${APP_PORT:-${API_PORT:-3001}}:3001"
+    volumes:
+      # Allow Payload Jobs to `docker compose run crawler` on the host engine
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/repo:ro
     depends_on:
       db:
         condition: service_healthy
@@ -55,6 +69,8 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-geouser}:${POSTGRES_PASSWORD:-geopass}@db:5432/${POSTGRES_DB:-geo_platform}
       CRAWL_TIMEZONE: ${CRAWL_TIMEZONE:-Asia/Ho_Chi_Minh}
+      # Legacy APScheduler off by default — Payload scheduleCrawl every 6h is primary
+      CRAWL_ENABLE_SCHEDULER: ${CRAWL_ENABLE_SCHEDULER:-0}
       CRAWL_SCHEDULE: ${CRAWL_SCHEDULE:-0 2 * * *}
       CRAWL_ON_START: ${CRAWL_ON_START:-0}
       OVERPASS_URL: ${OVERPASS_URL:-https://overpass-api.de/api/interpreter}
@@ -67,8 +83,11 @@ services:
     networks:
       - mapplatform
     # one-shot: docker compose run --rm crawler python -m scheduler.run_once
+    # preferred: create Crawl Job in Payload Admin (/admin)
 
+  # DEPRECATED: map UI lives in `app` (monolith). Keep profile for emergency rollback only.
   web:
+    profiles: ["legacy-web"]
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -87,8 +106,23 @@ services:
     ports:
       - "${WEB_PORT:-3002}:3000"
     depends_on:
-      api:
+      app:
         condition: service_healthy
+    networks:
+      - mapplatform
+
+  # Optional OpenTripPlanner (profile: transit). Place GTFS under data/gtfs/hanoi/ first.
+  # Build graph once, then serve. See data/gtfs/hanoi/README.md
+  otp:
+    profiles: ["transit"]
+    image: opentripplanner/opentripplanner:2.5.0
+    container_name: mapplatform-otp
+    restart: unless-stopped
+    ports:
+      - "${OTP_PORT:-8080}:8080"
+    volumes:
+      - ./data/gtfs/hanoi:/var/opentripplanner:rw
+    command: ["--load", "--serve"]
     networks:
       - mapplatform
 

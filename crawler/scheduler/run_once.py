@@ -4,11 +4,14 @@ Env:
   CRAWL_CITIES=hanoi,hcm,danang,haiphong,cantho,hue
   CRAWL_SOURCES=vinfast,charging,parking,rescue,gas,university,hospital,pharmacy,atm,bank,police,fire_station,school,marketplace
   CRAWL_ONLY=vinfast|overpass|charging|...
+  CITIES_JSON={...}                 # optional — from Payload Cities
+  PAYLOAD_CRAWL_JOB_ID=<cms id>     # optional — correlation only (Admin parent job)
 """
 
 from __future__ import annotations
 
 import logging
+import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -36,7 +39,9 @@ from sources.overpass_parking import fetch_parking  # noqa: E402
 from sources.overpass_pharmacy import fetch_pharmacies  # noqa: E402
 from sources.overpass_police import fetch_police  # noqa: E402
 from sources.overpass_rescue import fetch_rescue  # noqa: E402
+from sources.overpass_recreation import fetch_parks, fetch_tourist_attractions  # noqa: E402
 from sources.overpass_school import fetch_schools  # noqa: E402
+from sources.overpass_transit import fetch_bus_stops, fetch_subway_stations  # noqa: E402
 from sources.overpass_university import fetch_universities  # noqa: E402
 from sources.vinfast_seed import OFFICIAL_URL, fetch_vinfast_locations  # noqa: E402
 
@@ -58,6 +63,10 @@ OVERPASS_FETCHERS: dict[str, Callable] = {
     "fire_station": fetch_fire_stations,
     "school": fetch_schools,
     "marketplace": fetch_marketplaces,
+    "bus_stop": fetch_bus_stops,
+    "subway_station": fetch_subway_stations,
+    "park": fetch_parks,
+    "tourist_attraction": fetch_tourist_attractions,
 }
 OVERPASS_KINDS = tuple(OVERPASS_FETCHERS.keys())
 DEFAULT_SOURCES = ("vinfast",) + OVERPASS_KINDS
@@ -194,6 +203,16 @@ def _parse_sources() -> set[str]:
         "school": "school",
         "marketplace": "marketplace",
         "mall": "marketplace",
+        "bus_stop": "bus_stop",
+        "bus": "bus_stop",
+        "subway_station": "subway_station",
+        "subway": "subway_station",
+        "metro": "subway_station",
+        "transit": "bus_stop",
+        "park": "park",
+        "tourist_attraction": "tourist_attraction",
+        "attraction": "tourist_attraction",
+        "tourism": "tourist_attraction",
     }
     if only in aliases:
         return {aliases[only]}
@@ -224,9 +243,19 @@ def main() -> None:
     if not dsn:
         raise SystemExit("DATABASE_URL is required")
 
+    payload_job_id = (
+        os.getenv("PAYLOAD_CRAWL_JOB_ID", "").strip()
+        or os.getenv("CRAWL_JOB_ID", "").strip()
+        or None
+    )
     cities = _parse_cities()
     sources = _parse_sources()
-    log.info("Crawl cities=%s sources=%s", cities, sorted(sources))
+    log.info(
+        "Crawl cities=%s sources=%s payloadCrawlJobId=%s",
+        cities,
+        sorted(sources),
+        payload_job_id,
+    )
 
     overpass_url = os.getenv("OVERPASS_URL", "https://overpass-api.de/api/interpreter")
     results: list[dict] = []
@@ -259,9 +288,22 @@ def main() -> None:
                 )
 
     failed = [r for r in results if not r.get("ok")]
+    summary = {
+        "ok": not (results and failed and len(failed) == len(results)),
+        "found": sum(int(r.get("found") or 0) for r in results if r.get("ok")),
+        "created": sum(int(r.get("created") or 0) for r in results if r.get("ok")),
+        "updated": sum(int(r.get("updated") or 0) for r in results if r.get("ok")),
+        "deactivated": sum(int(r.get("deactivated") or 0) for r in results if r.get("ok")),
+        "failedSources": [str(r.get("source") or "?") for r in failed],
+        "payloadCrawlJobId": payload_job_id,
+        "resultsCount": len(results),
+    }
+    # Machine-readable line for Payload Job / crawlRunner (do not change format).
+    print(f"CRAWL_SUMMARY_JSON={json.dumps(summary, ensure_ascii=False)}", flush=True)
+    log.info("Crawl finished: %s", results)
+
     if results and failed and len(failed) == len(results):
         raise SystemExit("All crawl sources failed")
-    log.info("Crawl finished: %s", results)
 
 
 if __name__ == "__main__":

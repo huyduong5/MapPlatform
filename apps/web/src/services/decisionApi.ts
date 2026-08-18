@@ -1,5 +1,7 @@
 import type { LocationSummary } from '@/types/location'
 
+export type VehicleKind = 'ev_car' | 'ev_moto' | 'ice_car' | 'ice_moto'
+
 export type DecideResult = {
   query: string
   intent: {
@@ -9,7 +11,9 @@ export type DecideResult = {
     batteryPercent: number | null
     urgency: string
     source: string
+    vehicleKind?: string | null
   }
+  vehicle: { kind: VehicleKind; batteryPercent?: number | null } | null
   anchor: {
     latitude: number
     longitude: number
@@ -23,9 +27,18 @@ export type DecideResult = {
       rank: number
       score: number
       reasons: string[]
+      roadDistanceKm?: number | null
+      etaMinutes?: number | null
+      reachableWithBattery?: boolean | null
+      route?: {
+        type: 'LineString'
+        coordinates: Array<[number, number]>
+      } | null
+      directionsUrl?: string | null
     }
   >
   explanation: string
+  routingProvider?: string
 }
 
 const API_BASE =
@@ -37,6 +50,8 @@ export async function decide(params: {
   longitude?: number
   limit?: number
   city?: string
+  vehicle: { kind: VehicleKind; batteryPercent?: number }
+  destinationLandmark?: string
 }): Promise<DecideResult> {
   const res = await fetch(`${API_BASE}/api/decide`, {
     method: 'POST',

@@ -1,4 +1,4 @@
-# Payload CMS API — production image
+# MapPlatform monolith — Payload Admin + map UI + REST
 # Build context: repo root
 
 FROM node:20-bookworm-slim AS deps
@@ -22,6 +22,12 @@ COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/api ./apps/api
 WORKDIR /app/apps/api
+ARG NEXT_PUBLIC_API_BASE_URL=
+ARG NEXT_PUBLIC_MAP_TILE_URL=https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png
+ARG NEXT_PUBLIC_MAP_ATTRIBUTION=© OpenStreetMap contributors © CARTO
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_MAP_TILE_URL=$NEXT_PUBLIC_MAP_TILE_URL
+ENV NEXT_PUBLIC_MAP_ATTRIBUTION=$NEXT_PUBLIC_MAP_ATTRIBUTION
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm build
 
@@ -31,7 +37,7 @@ ENV NODE_ENV=production
 ENV PORT=3001
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    openssl ca-certificates \
+    openssl ca-certificates docker.io docker-compose-v2 \
     && rm -rf /var/lib/apt/lists/*
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 COPY --from=builder /app /app

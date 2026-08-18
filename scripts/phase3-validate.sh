@@ -30,6 +30,6 @@ chmod +x scripts/backup-db.sh scripts/restore-db.sh scripts/healthcheck.sh scrip
 
 echo "== build images (api + web + crawler) =="
 # Keep DB running; build only app images to validate Dockerfiles.
-docker compose build api web crawler
+docker compose build app crawler
 
 echo "PHASE 3 VALIDATE PASSED (repo-ready). Public go-live still needs VPS + DNS."

@@ -1,29 +1,8 @@
 import { CITIES, parseCity, type CityCode } from '@/lib/cities'
-import { LANDMARK_ALIASES } from './intent'
+import { getCityAliasTable, lookupPlaceAlias, LANDMARK_ALIASES } from './places/catalog'
 import type { AnchorPoint } from './types'
 
-/** City-scoped landmark aliases (Phase 7+) */
-const CITY_LANDMARKS: Partial<
-  Record<CityCode, Record<string, { lat: number; lng: number; label: string }>>
-> = {
-    hanoi: LANDMARK_ALIASES,
-    hcm: {
-      'quận 1': { lat: 10.7769, lng: 106.7009, label: 'Quận 1' },
-      'quan 1': { lat: 10.7769, lng: 106.7009, label: 'Quận 1' },
-      'landmark 81': { lat: 10.7951, lng: 106.722, label: 'Landmark 81' },
-      'bitexco': { lat: 10.7716, lng: 106.7043, label: 'Bitexco' },
-      'quận 7': { lat: 10.7295, lng: 106.7218, label: 'Quận 7' },
-      'quan 7': { lat: 10.7295, lng: 106.7218, label: 'Quận 7' },
-    },
-    danang: {
-      'cầu rồng': { lat: 16.061, lng: 108.227, label: 'Cầu Rồng' },
-      'cau rong': { lat: 16.061, lng: 108.227, label: 'Cầu Rồng' },
-      'sơn trà': { lat: 16.0615, lng: 108.247, label: 'Sơn Trà' },
-      'son tra': { lat: 16.0615, lng: 108.247, label: 'Sơn Trà' },
-      'hải châu': { lat: 16.0544, lng: 108.2022, label: 'Hải Châu' },
-      'hai chau': { lat: 16.0544, lng: 108.2022, label: 'Hải Châu' },
-    },
-}
+export { LANDMARK_ALIASES }
 
 function defaultCityAnchor(city: CityCode): AnchorPoint {
   const meta = CITIES[city]
@@ -39,19 +18,19 @@ export function resolveLandmarkAlias(
   landmark: string | null,
   city: CityCode = 'hanoi',
 ): AnchorPoint | null {
-  if (!landmark) return null
-  const key = landmark.toLowerCase().trim()
-  const table = CITY_LANDMARKS[city] || LANDMARK_ALIASES
-  const hit = table[key]
-  if (hit) {
-    return { latitude: hit.lat, longitude: hit.lng, label: hit.label, source: 'landmark_alias' }
+  const hit = lookupPlaceAlias(landmark, city)
+  if (!hit) return null
+  return {
+    latitude: hit.lat,
+    longitude: hit.lng,
+    label: hit.label,
+    source: 'landmark_alias',
   }
-  for (const [alias, val] of Object.entries(table)) {
-    if (key.includes(alias) || alias.includes(key)) {
-      return { latitude: val.lat, longitude: val.lng, label: val.label, source: 'landmark_alias' }
-    }
-  }
-  return null
+}
+
+/** @deprecated Prefer lookupPlaceAlias — kept for CITY_LANDMARKS introspection */
+export function getLandmarkTable(city: CityCode = 'hanoi') {
+  return getCityAliasTable(city)
 }
 
 /** Photon (Komoot) — $0, no API key. Biased to selected city. */
@@ -68,24 +47,48 @@ export async function geocodePhoton(
   url.searchParams.set('lat', String(meta.latitude))
   url.searchParams.set('lon', String(meta.longitude))
 
-  const res = await fetch(url, {
-    headers: { Accept: 'application/json' },
-    signal: AbortSignal.timeout(8000),
-  })
-  if (!res.ok) return null
-  const json = (await res.json()) as {
-    features?: Array<{ geometry?: { coordinates?: number[] }; properties?: { name?: string } }>
-  }
-  const f = json.features?.[0]
-  const coords = f?.geometry?.coordinates
-  if (!coords || coords.length < 2) return null
-  const [lng, lat] = coords
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-  return {
-    latitude: lat,
-    longitude: lng,
-    label: f?.properties?.name || query,
-    source: 'photon',
+  try {
+    const { request } = await import('node:https')
+    const body = await new Promise<string>((resolve, reject) => {
+      const req = request(
+        {
+          protocol: url.protocol,
+          hostname: url.hostname,
+          path: `${url.pathname}${url.search}`,
+          method: 'GET',
+          family: 4,
+          headers: { Accept: 'application/json', 'User-Agent': 'MapPlatform/1.0' },
+          timeout: 8000,
+        },
+        (res) => {
+          const chunks: Buffer[] = []
+          res.on('data', (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)))
+          res.on('end', () => {
+            if ((res.statusCode || 0) >= 400) reject(new Error(`Photon ${res.statusCode}`))
+            else resolve(Buffer.concat(chunks).toString('utf8'))
+          })
+        },
+      )
+      req.on('error', reject)
+      req.on('timeout', () => req.destroy(new Error('Photon timeout')))
+      req.end()
+    })
+    const json = JSON.parse(body) as {
+      features?: Array<{ geometry?: { coordinates?: number[] }; properties?: { name?: string } }>
+    }
+    const f = json.features?.[0]
+    const coords = f?.geometry?.coordinates
+    if (!coords || coords.length < 2) return null
+    const [lng, lat] = coords
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+    return {
+      latitude: lat,
+      longitude: lng,
+      label: f?.properties?.name || query,
+      source: 'photon',
+    }
+  } catch {
+    return null
   }
 }
 
